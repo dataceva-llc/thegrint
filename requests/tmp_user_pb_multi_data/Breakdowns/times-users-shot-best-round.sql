@@ -1,4 +1,5 @@
 -- Amount of times that user shot their best round (with base-filter-users.sql applied)
+-- Calculates the number of times that each user shot their best round and their best round data
 -- ETA. ~90 seconds
 SELECT
     COUNT(*) AS number_of_users, -- Total number of users that fall into the below buckets
@@ -43,7 +44,7 @@ FROM (
         MAX(total_rounds) AS total_rounds,
         MAX(pb_score) AS pb_score,
         AVG(handicap_index) AS avg_handicap
-    FROM thegrint_analytics.users_filtered_with_pb_data
+    FROM thegrint_analytics.user_pb_multi_data
     WHERE
         scround = pb_score
     GROUP BY
