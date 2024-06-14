@@ -1,11 +1,13 @@
 -- Create this table with the user data for all other SQL scripts in this folder
 -- Create a temp table to store user data and pb's data for each user
--- ETA: ~420 seconds (7 minutes)
+-- ETA: ~1300 seconds (7 minutes)
 DROP TABLE IF EXISTS thegrint_analytics.user_pb_multi_data;
 CREATE TABLE IF NOT EXISTS thegrint_analytics.user_pb_multi_data AS
 SELECT
     userid,
     MAX(total_rounds) AS total_rounds,
+    COUNT(*) AS total_rounds_calculated,
+    COUNT(time_between_pbs) AS total_times_PBd,
     MAX(pb_score) AS pb_score,
 
     MAX(CASE WHEN pb_round_handicap BETWEEN -30 AND 100 THEN pb_round_handicap END) AS pb_round_handicap,
@@ -20,9 +22,31 @@ SELECT
     MIN(CASE WHEN time_between_pbs BETWEEN 0 AND 1000 THEN time_between_pbs END) AS min_time_between_pbs,
     AVG(CASE WHEN time_between_pbs BETWEEN 0 AND 1000 THEN time_between_pbs END) AS avg_time_between_pbs,
 
+    AVG(CASE WHEN time_between_pbs_after_1 BETWEEN 0 AND 1000 THEN time_between_pbs_after_1 END) AS time_between_pbs_after_1,
+    AVG(CASE WHEN time_between_pbs_after_2 BETWEEN 0 AND 1000 THEN time_between_pbs_after_2 END) AS time_between_pbs_after_2,
+    AVG(CASE WHEN time_between_pbs_after_3 BETWEEN 0 AND 1000 THEN time_between_pbs_after_3 END) AS time_between_pbs_after_3,
+    AVG(CASE WHEN time_between_pbs_after_4 BETWEEN 0 AND 1000 THEN time_between_pbs_after_4 END) AS time_between_pbs_after_4,
+    AVG(CASE WHEN time_between_pbs_after_5 BETWEEN 0 AND 1000 THEN time_between_pbs_after_5 END) AS time_between_pbs_after_5,
+    AVG(CASE WHEN time_between_pbs_after_6 BETWEEN 0 AND 1000 THEN time_between_pbs_after_6 END) AS time_between_pbs_after_6,
+    AVG(CASE WHEN time_between_pbs_after_7 BETWEEN 0 AND 1000 THEN time_between_pbs_after_7 END) AS time_between_pbs_after_7,
+    AVG(CASE WHEN time_between_pbs_after_8 BETWEEN 0 AND 1000 THEN time_between_pbs_after_8 END) AS time_between_pbs_after_8,
+    AVG(CASE WHEN time_between_pbs_after_9 BETWEEN 0 AND 1000 THEN time_between_pbs_after_9 END) AS time_between_pbs_after_9,
+    AVG(CASE WHEN time_between_pbs_after_10 BETWEEN 0 AND 1000 THEN time_between_pbs_after_10 END) AS time_between_pbs_after_10,
+
     MAX(CASE WHEN pb_diff BETWEEN -30 AND 0 THEN pb_diff END) AS max_pb_diff,
     MIN(CASE WHEN pb_diff BETWEEN -30 AND 0 THEN pb_diff END) AS min_pb_diff,
     AVG(CASE WHEN pb_diff BETWEEN -30 AND 0 THEN pb_diff END) AS avg_pb_diff,
+
+    AVG(CASE WHEN pb_diff_after_1 BETWEEN -30 AND 0 THEN pb_diff_after_1 END) AS pb_diff_after_1,
+    AVG(CASE WHEN pb_diff_after_2 BETWEEN -30 AND 0 THEN pb_diff_after_2 END) AS pb_diff_after_2,
+    AVG(CASE WHEN pb_diff_after_3 BETWEEN -30 AND 0 THEN pb_diff_after_3 END) AS pb_diff_after_3,
+    AVG(CASE WHEN pb_diff_after_4 BETWEEN -30 AND 0 THEN pb_diff_after_4 END) AS pb_diff_after_4,
+    AVG(CASE WHEN pb_diff_after_5 BETWEEN -30 AND 0 THEN pb_diff_after_5 END) AS pb_diff_after_5,
+    AVG(CASE WHEN pb_diff_after_6 BETWEEN -30 AND 0 THEN pb_diff_after_6 END) AS pb_diff_after_6,
+    AVG(CASE WHEN pb_diff_after_7 BETWEEN -30 AND 0 THEN pb_diff_after_7 END) AS pb_diff_after_7,
+    AVG(CASE WHEN pb_diff_after_8 BETWEEN -30 AND 0 THEN pb_diff_after_8 END) AS pb_diff_after_8,
+    AVG(CASE WHEN pb_diff_after_9 BETWEEN -30 AND 0 THEN pb_diff_after_9 END) AS pb_diff_after_9,
+    AVG(CASE WHEN pb_diff_after_10 BETWEEN -30 AND 0 THEN pb_diff_after_10 END) AS pb_diff_after_10,
     
     MAX(CASE WHEN previous_round_diff BETWEEN -50 AND 50 THEN previous_round_diff END) AS max_previous_round_diff,
     MIN(CASE WHEN previous_round_diff BETWEEN -50 AND 50 THEN previous_round_diff END) AS min_previous_round_diff,
@@ -69,6 +93,44 @@ FROM (
             users_filtered.scround - @previous_round,
             NULL
         ) AS previous_round_diff,
+
+        -- Get the current times the user has PB'd
+        @amount_of_pbs := IF(
+            users_filtered.userid = @prev_user,
+            @amount_of_pbs,
+            1
+        ) AS ignore_amount_of_pbs,
+
+        @amount_of_pbs := IF (
+            users_filtered.scround < @previous_best_round,
+            @amount_of_pbs + 1,
+            @amount_of_pbs
+        ) AS ignore_total_times_PBd,
+
+        -- Use the total times PBd value to calculate different starting points for the user's PB data
+        -- PB data after the user's first PB (second PB)
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 2, @since_last_pb + 1, NULL) AS time_between_pbs_after_1,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 3, @since_last_pb + 1, NULL) AS time_between_pbs_after_2,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 4, @since_last_pb + 1, NULL) AS time_between_pbs_after_3,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 5, @since_last_pb + 1, NULL) AS time_between_pbs_after_4,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 6, @since_last_pb + 1, NULL) AS time_between_pbs_after_5,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 7, @since_last_pb + 1, NULL) AS time_between_pbs_after_6,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 8, @since_last_pb + 1, NULL) AS time_between_pbs_after_7,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 9, @since_last_pb + 1, NULL) AS time_between_pbs_after_8,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 10, @since_last_pb + 1, NULL) AS time_between_pbs_after_9,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 11, @since_last_pb + 1, NULL) AS time_between_pbs_after_10,
+
+        -- Same as above but for PB diff
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 2, users_filtered.scround - @previous_best_round, NULL) AS pb_diff_after_1,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 3, users_filtered.scround - @previous_best_round, NULL) AS pb_diff_after_2,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 4, users_filtered.scround - @previous_best_round, NULL) AS pb_diff_after_3,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 5, users_filtered.scround - @previous_best_round, NULL) AS pb_diff_after_4,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 6, users_filtered.scround - @previous_best_round, NULL) AS pb_diff_after_5,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 7, users_filtered.scround - @previous_best_round, NULL) AS pb_diff_after_6,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 8, users_filtered.scround - @previous_best_round, NULL) AS pb_diff_after_7,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 9, users_filtered.scround - @previous_best_round, NULL) AS pb_diff_after_8,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 10, users_filtered.scround - @previous_best_round, NULL) AS pb_diff_after_9,
+        IF (users_filtered.userid = @prev_user AND users_filtered.scround < @previous_best_round AND @amount_of_pbs > 11, users_filtered.scround - @previous_best_round, NULL) AS pb_diff_after_10,
 
         @since_last_pb := IF(
             users_filtered.scround < @previous_best_round,
@@ -171,6 +233,7 @@ FROM (
         @seq_pb := 0,
         @prev_user := NULL,
         @tmp_user := NULL,
+        @amount_of_pbs := 0,
         @previous_best_round := 9999,
         @previous_round := 9999,
         @since_last_pb := 0,
@@ -179,4 +242,4 @@ FROM (
 ) AS subq
 GROUP BY userid;
 CREATE INDEX idx_userid ON thegrint_analytics.user_pb_multi_data (userid);
--- SELECT * FROM thegrint_analytics.user_pb_multi_data;
+SELECT * FROM thegrint_analytics.user_pb_multi_data LIMIT 1000;
