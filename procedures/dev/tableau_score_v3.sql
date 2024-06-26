@@ -1,8 +1,6 @@
 DELIMITER $$
 
--- Main table used in the Tableau dashboard 'Scores Dashboard'
-CREATE DEFINER = `1bT12@uylp12` @`%` PROCEDURE `tableau_scores`() BEGIN
-
+CREATE DEFINER = `1bT12@uylp12` @`%` PROCEDURE `tableau_scores`() BEGIN -- Drop the final table if it exists
 DROP TABLE IF EXISTS thegrint_analytics.tableau_scores;
 
 -- START 18 hole scores --
@@ -25,6 +23,14 @@ SELECT
   `grint_user`.`gender` AS `gender`,
   `grint_user`.`grint_network` AS `grint_network`,
   `grint_user`.`handicap_index` AS `handicap_index`,
+  CASE
+		WHEN `grint_user`.`handicap_index` < 4 THEN '<4'
+		WHEN `grint_user`.`handicap_index` BETWEEN 5 AND 10 THEN '5_10'
+		WHEN `grint_user`.`handicap_index` BETWEEN 10 AND 15 THEN '10_15'
+		WHEN `grint_user`.`handicap_index` BETWEEN 15 AND 20 THEN '15_20'
+		WHEN `grint_user`.`handicap_index` BETWEEN 20 AND 25 THEN '20_25'
+		ELSE '25+'
+	END AS handicap_index_bucket,
   `grint_user`.`handicap_n` AS `handicap_n`,
   `grint_user`.`hdcp_card` AS `hdcp_card`,
   `grint_user`.`hybrids` AS `hybrids`,
@@ -80,6 +86,7 @@ SELECT
   scorestable.score_type,
   scorestable.rounds,
   CASE WHEN scorestable.rounds >= 3 THEN 1 ELSE 0 END AS equal_or_more_than_3_rounds,
+  scorestable.added_date,
   scorestable.players,
   scorestable.leaderboard,
   scorestable.short,
@@ -179,6 +186,14 @@ SELECT
   `grint_user`.`gender` AS `gender`,
   `grint_user`.`grint_network` AS `grint_network`,
   `grint_user`.`handicap_index` AS `handicap_index`,
+  CASE
+		WHEN `grint_user`.`handicap_index` < 4 THEN '<4'
+		WHEN `grint_user`.`handicap_index` BETWEEN 5 AND 10 THEN '5_10'
+		WHEN `grint_user`.`handicap_index` BETWEEN 10 AND 15 THEN '10_15'
+		WHEN `grint_user`.`handicap_index` BETWEEN 15 AND 20 THEN '15_20'
+		WHEN `grint_user`.`handicap_index` BETWEEN 20 AND 25 THEN '20_25'
+		ELSE '25+'
+	END AS handicap_index_bucket,
   `grint_user`.`handicap_n` AS `handicap_n`,
   `grint_user`.`hdcp_card` AS `hdcp_card`,
   `grint_user`.`hybrids` AS `hybrids`,
@@ -312,7 +327,11 @@ FROM
   LEFT JOIN thegrint_grint.whs_club_association_zipcode AS wcaz ON grint_user.zipcode = wcaz.zipcode
   LEFT JOIN thegrint_grint.whs_club_association AS wca ON wcaz.whs_association_id = wca.whs_association_id;
 
--- END 9 hole scores --
+-- Create indexes on the final table
+CREATE INDEX idx_scores_user_id ON thegrint_analytics.tableau_scores (scores_user_id);
+CREATE INDEX idx_score_type ON thegrint_analytics.tableau_scores (score_type);
+CREATE INDEX idx_added_date ON thegrint_analytics.tableau_scores (added_date);
+
 END$$
 
 DELIMITER ;
