@@ -85,7 +85,9 @@ SELECT
   scorestable.leaderboard,
   scorestable.short,
   scorestable.SPS_Round,
-  scorestable.Golfer_Type
+  scorestable.Golfer_Type,
+  scorestable.membership_group,
+  scorestable.reporting_group_id
 FROM
   (
     SELECT
@@ -109,10 +111,53 @@ FROM
         WHEN SPS.scoreid IS NOT NULL THEN 'SPS'
         ELSE 'Non SPS Round'
       END AS SPS_Round,
+      CASE
+        WHEN members.membership_group IS NOT NULL THEN members.membership_group
+        ELSE 'Non-Members'
+      END AS membership_group,
+      reporting_group_id,
       COUNT(DISTINCT USN.scoreid) AS Rounds,
       COUNT(*) AS Rows
     FROM
       thegrint_analytics.user_score_replica USN
+      LEFT JOIN (
+        SELECT 
+          membership.user_id,
+          mt.reporting_group_id,
+          CASE mt.reporting_group_id
+            WHEN 0 THEN "Free Membership"
+            WHEN 1 THEN "PRO Membership"
+            WHEN 2 THEN "Lifetime PRO Membership"
+            WHEN 3 THEN "Original PRO+ Membership"
+            WHEN 4 THEN "Unified PRO+ Membership (2023)"
+            WHEN 5 THEN "PRO Membership by Gift"
+            WHEN 6 THEN "TheGrint Tour Membership (Includes PRO)"
+            WHEN 7 THEN "Handicap Membership (2020 WHS Membeship sold by TheGrint)"
+            WHEN 8 THEN "USGA Handicap Membership"
+            WHEN 9 THEN "Other Golf Associations Handicap Membership"
+            WHEN 10 THEN "PRO+ and Handicap Bundle"
+          END AS membership_group,
+          mp.purchase_date AS start_membership_date,
+          COALESCE(mp.cancelation_date, mp.expiration_date) AS end_membership_date
+
+        FROM thegrint_grint.membership AS membership
+        LEFT JOIN thegrint_grint.membership_payment AS mp 
+          ON membership.user_id = mp.user_id 
+          AND membership.membership_id = mp.membership_id
+        LEFT JOIN thegrint_grint.membership_type AS mt 
+          ON membership.membership_type_id = mt.membership_type_id
+        WHERE mp.purchase_date >= '2022-12-31'
+          AND (COALESCE(mp.cancelation_date, mp.expiration_date) >= '2022-12-31')
+          AND NOT EXISTS (
+            SELECT 1 
+            FROM thegrint_grint.membership_payment AS mp_inner
+            WHERE mp_inner.user_id = membership.user_id
+              AND mp_inner.membership_id <> mp.membership_id
+              AND mp_inner.purchase_date <= COALESCE(mp.cancelation_date, mp.expiration_date)
+              AND COALESCE(mp_inner.cancelation_date, mp_inner.expiration_date) >= mp.purchase_date
+          )
+      ) AS members ON USN.userid = members.user_id AND USN.added_date BETWEEN members.start_membership_date AND members.end_membership_date
+      
       LEFT JOIN (
         SELECT
           scoreid,
@@ -151,8 +196,13 @@ FROM
       END,
       CASE
         WHEN leaderboard_id IS NOT NULL THEN 'Leaderboard Round'
-        ELSE 'Normal Round'
-      END
+        ELSE 'Non Leaderboard Round'
+      END,
+      CASE
+        WHEN members.membership_group IS NOT NULL THEN members.membership_group
+        ELSE 'Non-Members'
+      END,
+      reporting_group_id
   ) AS scorestable
   LEFT JOIN thegrint_grint.grint_user ON scorestable.userid = grint_user.user_id
   LEFT JOIN thegrint_grint.whs_club_association_zipcode AS wcaz ON grint_user.zipcode = wcaz.zipcode
@@ -240,7 +290,9 @@ SELECT
   scorestable.leaderboard,
   scorestable.short,
   scorestable.SPS_Round,
-  scorestable.Golfer_Type
+  scorestable.Golfer_Type,
+  scorestable.membership_group,
+  scorestable.reporting_group_id
 FROM
   (
     SELECT
@@ -264,10 +316,53 @@ FROM
         WHEN SPS.scoreid IS NOT NULL THEN 'SPS'
         ELSE 'Non SPS Round'
       END AS SPS_Round,
+      CASE
+        WHEN members.membership_group IS NOT NULL THEN members.membership_group
+        ELSE 'Non-Members'
+      END AS membership_group,
+      reporting_group_id,
       COUNT(DISTINCT USN.scoreid) AS Rounds,
       COUNT(*) AS Rows
     FROM
       thegrint_analytics.user_score_nine_replica USN
+      LEFT JOIN (
+        SELECT 
+          membership.user_id,
+          mt.reporting_group_id,
+          CASE mt.reporting_group_id
+            WHEN 0 THEN "Free Membership"
+            WHEN 1 THEN "PRO Membership"
+            WHEN 2 THEN "Lifetime PRO Membership"
+            WHEN 3 THEN "Original PRO+ Membership"
+            WHEN 4 THEN "Unified PRO+ Membership (2023)"
+            WHEN 5 THEN "PRO Membership by Gift"
+            WHEN 6 THEN "TheGrint Tour Membership (Includes PRO)"
+            WHEN 7 THEN "Handicap Membership (2020 WHS Membeship sold by TheGrint)"
+            WHEN 8 THEN "USGA Handicap Membership"
+            WHEN 9 THEN "Other Golf Associations Handicap Membership"
+            WHEN 10 THEN "PRO+ and Handicap Bundle"
+          END AS membership_group,
+          mp.purchase_date AS start_membership_date,
+          COALESCE(mp.cancelation_date, mp.expiration_date) AS end_membership_date
+
+        FROM thegrint_grint.membership AS membership
+        LEFT JOIN thegrint_grint.membership_payment AS mp 
+          ON membership.user_id = mp.user_id 
+          AND membership.membership_id = mp.membership_id
+        LEFT JOIN thegrint_grint.membership_type AS mt 
+          ON membership.membership_type_id = mt.membership_type_id
+        WHERE mp.purchase_date >= '2022-12-31'
+          AND (COALESCE(mp.cancelation_date, mp.expiration_date) >= '2022-12-31')
+          AND NOT EXISTS (
+            SELECT 1 
+            FROM thegrint_grint.membership_payment AS mp_inner
+            WHERE mp_inner.user_id = membership.user_id
+              AND mp_inner.membership_id <> mp.membership_id
+              AND mp_inner.purchase_date <= COALESCE(mp.cancelation_date, mp.expiration_date)
+              AND COALESCE(mp_inner.cancelation_date, mp_inner.expiration_date) >= mp.purchase_date
+          )
+      ) AS members ON USN.userid = members.user_id AND USN.added_date BETWEEN members.start_membership_date AND members.end_membership_date
+      
       LEFT JOIN (
         SELECT
           scoreid,
@@ -306,14 +401,23 @@ FROM
       END,
       CASE
         WHEN leaderboard_id IS NOT NULL THEN 'Leaderboard Round'
-        ELSE 'Normal Round'
-      END
+        ELSE 'Non Leaderboard Round'
+      END,
+      CASE
+        WHEN members.membership_group IS NOT NULL THEN members.membership_group
+        ELSE 'Non-Members'
+      END,
+      reporting_group_id
   ) AS scorestable
   LEFT JOIN thegrint_grint.grint_user ON scorestable.userid = grint_user.user_id
   LEFT JOIN thegrint_grint.whs_club_association_zipcode AS wcaz ON grint_user.zipcode = wcaz.zipcode
   LEFT JOIN thegrint_grint.whs_club_association AS wca ON wcaz.whs_association_id = wca.whs_association_id;
 
 -- END 9 hole scores --
+
+-- Create the index for the table
+CREATE INDEX tableau_scores_user_id_index ON thegrint_analytics.tableau_scores (scores_user_id);
+
 END$$
 
 DELIMITER ;

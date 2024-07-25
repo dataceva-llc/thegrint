@@ -1,0 +1,264 @@
+# Documented Work
+
+## All Stored Procedures Running
+
+- `thegrint_analytics.User_Scor_Replica_RowByRow()`
+- `thegrint_analytics.User_Scor_nine_Replica_RowByRow()`
+- `thegrint_analytics.Activation_Dashboard()`
+- `thegrint_analytics.tableau_scores()`
+
+---
+
+### Helpers - Stored Procedure Functions
+
+##### _These are dependants_ for the dates and other row values to update on the other dashbaords queries.
+
+- `thegrint_analytics.User_Scor_Replica_RowByRow()`
+- `thegrint_analytics.User_Scor_nine_Replica_RowByRow()`
+
+---
+
+### Activation Dashboard
+
+- **File:** `Activation_Dashboard.sql`
+- **Type:** Stored Procedure
+- **Call:** `thegrint_analytics.Activation_Dashboard()`
+- **Table:** `thegrint_analytics.activation_metrics`
+- **Columns:**
+  - doj
+  - last_login
+  - verified
+  - country
+  - zipcode
+  - membership
+  - friends_60_days
+  - friends
+  - scores_60_days
+  - scores
+  - user_had_free_trial
+  - user_had_free_trial_60_days
+  - has_had_pro_membership
+  - has_had_pro_membership_60_days
+  - has_had_handicap_membership
+  - has_had_handicap_membership_60_days
+  - whs_linked
+  - whs_linked_60_days
+  - users
+  - rows
+  - scores_added_date
+  - scores_round_date
+
+### Members Dashboard
+
+- **File:** `Members_Dashboard.sql`
+- **Type:** Tableau SQL Query
+- **Call:**
+- **Table:**
+- **Columns:**
+  - account_id
+  - active
+  - address
+  - admin
+  - amount
+  - app_type
+  - auto_renewing
+  - avg_logins
+  - bestFairway
+  - bestGIR
+  - bestPutts
+  - bestScore
+  - cancelation_date
+  - commission
+  - company_id
+  - country
+  - default_filter
+  - default_filter_round
+  - description_proshop
+  - display_in_proshop
+  - doj
+  - expiration_date
+  - fav_course
+  - fb_id
+  - for_amount_users
+  - full_price
+  - gender
+  - grint_network
+  - handicap_index
+  - handicap_n
+  - hdcp_card
+  - hybrids
+  - image
+  - inactive
+  - is_renewable
+  - is_winter_state
+  - last_login
+  - life_logins
+  - map_full_access
+  - max_api_version
+  - member_period
+  - member_type
+  - membership_id (membership_account)
+  - membership_id (membership_payment)
+  - membership_id
+  - membership_payment_id (membership_account)
+  - membership_payment_id
+  - membership_profile_id
+  - membership_source_id (membership_source)
+  - membership_source_id
+  - membership_type_id (membership_type)
+  - membership_type_id (membership_type_company)
+  - membership_type_id
+  - min_api_version
+  - multiple
+  - name
+  - name_format
+  - name_public
+  - name_stripe
+  - newsletter
+  - official_hcp_index
+  - official_index
+  - official_index_n
+  - old_membership_profile_id
+  - on_sale
+  - on_sale_price
+  - only_handicap
+  - password
+  - payment
+  - period_trial
+  - purchase_date (membership_payment)
+  - purchase_date
+  - purchase_date_system
+  - purchase_expired
+  - purchase_period
+  - receipt_no
+  - referrer
+  - registration_source
+  - remember_login
+  - renewal_period
+  - score_admin
+  - showwelcome
+  - showwelcome_app
+  - source
+  - sps_counter
+  - sps_trial_counter
+  - super_admin
+  - transaction_amount
+  - transaction_currency
+  - trial_period
+  - type
+  - user_bag
+  - user_ball
+  - user_dob
+  - user_driver
+  - user_email
+  - user_fairwaywood
+  - user_fname
+  - user_hand
+  - user_homecourse
+  - user_id (membership)
+  - user_id (membership_account)
+  - user_id (membership_payment)
+  - user_id
+  - user_irons
+  - user_lname
+  - user_putter
+  - user_username
+  - valid_from
+  - valid_to
+  - verification_code
+  - verified
+  - website_registered
+  - wedges
+  - welcome_club
+  - whs_association_price_id
+  - zipcode
+  - Golf_Association
+  - Reporting_Product_Type
+
+### Scores Dashboard
+
+- **File:** `Scores_Dashboard.sql`
+- **Type:** Stored Procedure
+- **Call:** `thegrint_analytics.tableau_scores()`
+- **Table:** `thegrint_analytics.tableau_scores`
+- **Columns:**
+  - address
+  - admin
+  - app_type
+  - avg_logins
+  - bestFairway
+  - bestGIR
+  - bestPutts
+  - bestScore
+  - country
+  - default_filter
+  - default_filter_round
+  - doj
+  - fav_course
+  - fb_id
+  - gender
+  - grint_network
+  - handicap_index
+  - handicap_n
+  - hdcp_card
+  - hybrids
+  - image
+  - inactive
+  - is_winter_state
+  - last_login
+  - life_logins
+  - map_full_access
+  - member_period
+  - member_type
+  - newsletter
+  - official_hcp_index
+  - official_index
+  - official_index_n
+  - password
+  - payment
+  - purchase_date
+  - purchase_expired
+  - purchase_period
+  - receipt_no
+  - referrer
+  - registration_source
+  - remember_login
+  - score_admin
+  - showwelcome
+  - showwelcome_app
+  - sps_counter
+  - sps_trial_counter
+  - super_admin
+  - user_bag
+  - user_ball
+  - user_dob
+  - user_driver
+  - user_email
+  - user_fairwaywood
+  - user_fname
+  - user_hand
+  - user_homecourse
+  - user_id
+  - user_irons
+  - user_lname
+  - user_putter
+  - user_username
+  - verification_code
+  - verified
+  - website_registered
+  - wedges
+  - welcome_club
+  - zipcode
+  - Golf_Association
+  - scores_user_id
+  - score_type
+  - rounds
+  - equal_or_more_than_3_rounds
+  - added_date
+  - players
+  - leaderboard
+  - short
+  - SPS_Round
+  - Golfer_Type
+  - membership_group
+  - reporting_group_id

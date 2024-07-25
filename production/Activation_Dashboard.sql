@@ -1,6 +1,4 @@
-DELIMITER $$
-
-CREATE DEFINER = `1bT12@uylp12`@`%` PROCEDURE `Activation_Dashboard`()
+CREATE DEFINER=`1bT12@uylp12`@`%` PROCEDURE `Activation_Dashboard`()
 BEGIN
 
 DROP TABLE IF EXISTS thegrint_analytics.all_scores;
@@ -134,6 +132,4 @@ GROUP BY
 	members.membership,
 	friends.friends;
 
-END$$
-
-DELIMITER ;
+END
